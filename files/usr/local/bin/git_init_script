@@ -1,0 +1,60 @@
+#!/bin/bash
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --localtree)
+            LOCALTREE=$2
+            shift; shift
+        ;;
+        --name)
+            NAME=$2
+            shift; shift
+        ;;
+        --shared)
+            SHARED=$2
+            shift; shift
+        ;;
+        --owner)
+            OWNER=$2
+            shift; shift
+        ;;
+        --group)
+            GROUP=$2
+            shift; shift
+        ;;
+    esac
+done
+
+# --name is required
+[ -z "$NAME" ] && exit 1
+
+# tree must exist
+[ ! -d "$LOCALTREE/$NAME" ] && exit 1
+
+# if .git directory is there, we're already done
+[ -d "$LOCALTREE/$NAME/.git" ] && exit 0
+
+# if owner doesn't exit
+[ -z "$OWNER" ] && exit 1
+[ -z "`getent passwd | grep $OWNER`" ] && exit 1
+
+# same if group doesn't exist
+[ -z "$GROUP" ] && exit 1
+[ -z "`getent group | grep $GROUP`" ] && exit 1
+
+cd "$LOCALTREE/$NAME"
+
+[ "$SHARED" == "true" ] && git init --shared || git init
+
+echo This is an initial commit file > README
+
+git add README
+
+git commit -a -m "Initial Commit"
+
+if [ $SHARED -eq 1 ]; then
+    find . -type d -exec chmod g+ws {} \;
+    find . -type f -exec chmod g+w {} \;
+fi
+
+chown -R $OWNER:$GROUP .

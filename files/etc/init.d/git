@@ -1,0 +1,91 @@
+#! /bin/sh
+# git          Startup script for the GIT Daemon
+#
+# chkconfig: - 85 15
+# description: The GIT Daemon.
+# processname: git-daemon
+# config: /etc/sysconfig/git-daemon
+# pidfile: /var/run/git-daemon.pid
+#
+### BEGIN INIT INFO
+# Provides: git-daemon
+# Required-Start: $local_fs $remote_fs $network
+# Required-Stop: $local_fs $remote_fs $network
+# Short-Description: start and stop the GIT Daemon
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+NAME=git-daemon
+PIDFILE=/var/run/$NAME.pid
+DESC="git-daemon"
+DAEMON=/usr/bin/git-daemon
+
+test -x $DAEMON || exit 0
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+DAEMON_OPTS=
+
+if [ -f /etc/sysconfig/git-daemon ]; then
+        . /etc/sysconfig/git-daemon
+fi
+
+[ -z "$BASE_PATH" ] && BASE_PATH=/srv/git
+[ -z "$USER" ] && USER=nobody
+[ -z "$GROUP" ] && GROUP=nobody
+[ -z "$PIDFILE" ] && PIDFILE=/var/run/$NAME.pid
+
+DAEMON_OPTS="--base-path=$BASE_PATH --syslog --detach --pid-file=$PIDFILE --user=$USER --group=$GROUP"
+
+[ ! -z "$EXPORT" ] && DAEMON_OPTS="$DAEMON_OPTS --export-all"
+
+start() {
+    echo -n $"Starting $DESC"
+	daemon $DAEMON $DAEMON_OPTS
+}
+
+stop() {
+    echo -n $"Stopping $DESC"
+	killproc $DAEMON
+}
+
+restart() {
+    stop
+    start
+}
+
+status() {
+    if [ -f $PIDFILE ]; then
+        pid=`cat $PIDFILE`
+        if kill -0 $pid > /dev/null 2>&1 ; then
+            echo "$DESC (pid $pid) is running..."
+        else
+            echo "$DESC dead but pid file exists"
+        fi
+    else
+        echo "$DESC is stopped"
+    fi
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
