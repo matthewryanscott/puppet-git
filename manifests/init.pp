@@ -77,7 +77,7 @@ define git::pull($source = False, $localtree = "/srv/git/") {
     }
 
     case $source {
-        false: {
+        False,false: {
             exec { "git_pull_exec_$name":
                 cwd => "$localtree/$name",
                 command => "git pull",
