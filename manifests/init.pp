@@ -76,14 +76,23 @@ define git::pull($source = False, $localtree = "/srv/git/") {
         localtree => $localtree
     }
 
-    exec { "git_pull_exec_$name":
-        cwd => "$localtree/$name",
-        command => $source ? {
-            false => "git pull",
-            default => "git pull $source"
-        },
-        onlyif => "test -d $localtree/$name/.git",
-        require => Exec["git_reset_exec_$name"]
+    case $source {
+        false: {
+            exec { "git_pull_exec_$name":
+                cwd => "$localtree/$name",
+                command => "git pull",
+                onlyif => "test -d $localtree/$name/.git",
+                require => Exec["git_reset_exec_$name"]
+            }
+        }
+        default: {
+            exec { "git_pull_exec_$name":
+                cwd => "$localtree/$name",
+                command => "git pull $source",
+                onlyif => "test -d $localtree/$name/.git",
+                require => Exec["git_reset_exec_$name"]
+            }
+        }
     }
 }
 
