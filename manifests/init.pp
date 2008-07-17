@@ -107,33 +107,33 @@ define git::repository( $public = false, $shared = false, $localtree = "/srv/git
     }
 }
 
-define git::clean($localtree = "/srv/git/") {
+define git::clean($localtree = "/srv/git") {
     exec { "git_clean_exec_$name":
         cwd => "$localtree/$name",
         command => "git clean -d -f"
     }
 }
 
-define git::reset($localtree = "/srv/git/", $clean = True) {
+define git::reset($localtree = "/srv/git", $clean = true) {
     exec { "git_reset_exec_$name":
         cwd => "$localtree/$name",
         command => "git reset --hard HEAD"
     }
 
-    if ($clean) {
+    if $clean {
         git::clean { "$name":
-            localtree => $localtree
+            localtree => "$localtree"
         }
     }
 }
 
-define git::pull($source = False, $localtree = "/srv/git/") {
+define git::pull($source = false, $localtree = "/srv/git") {
     git::reset { "$name":
-        localtree => $localtree
+        localtree => "$localtree"
     }
 
     case $source {
-        False,false: {
+        false: {
             exec { "git_pull_exec_$name":
                 cwd => "$localtree/$name",
                 command => "git pull",
@@ -152,7 +152,7 @@ define git::pull($source = False, $localtree = "/srv/git/") {
     }
 }
 
-define git::clone($source, $localtree = "/srv/git/") {
+define git::clone($source, $localtree = "/srv/git") {
     file { "git_clone_file_$name":
         path => "$localtree/$name",
         ensure => absent,
@@ -169,7 +169,7 @@ define git::clone($source, $localtree = "/srv/git/") {
     }
 }
 
-define git::repository::domain($public = false, $shared = false, $localtree = "/srv/git/", $owner = "root", $group = "root", $init = true) {
+define git::repository::domain($public = false, $shared = false, $localtree = "/srv/git", $owner = "root", $group = "root", $init = true) {
     git::repository { "$name":
         public => $public,
         shared => $shared,
