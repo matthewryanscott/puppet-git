@@ -22,6 +22,10 @@ while [ $# -gt 0 ]; do
             GROUP=$2
             shift; shift
         ;;
+        --init-commit)
+            INIT_COMMIT=1
+            shift
+        ;;
     esac
 done
 
@@ -46,11 +50,11 @@ cd "$LOCALTREE/$NAME"
 
 [ "$SHARED" == "true" ] && git init --shared || git init
 
-echo This is an initial commit file > README
-
-git add README
-
-git commit -a -m "Initial Commit"
+if [ ! -z "$INIT_COMMIT" ] ; then
+    echo This is an initial commit file > README
+    git add README
+    git commit -a -m "Initial Commit"
+fi
 
 if [ $SHARED -eq 1 ]; then
     find . -type d -exec chmod g+ws {} \;
