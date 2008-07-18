@@ -51,7 +51,6 @@ if [ -d "$LOCALTREE/$NAME/.git" ]; then
         find "$LOCALTREE/$NAME" -type d -exec chmod g+ws {} \;
         find "$LOCALTREE/$NAME" -type f -exec chmod g+w {} \;
     fi
-else
     exit 0
 fi
 
