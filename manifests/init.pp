@@ -77,8 +77,8 @@ define git::repository( $public = false, $shared = false, $localtree = "/srv/git
     file { "git_repository_$name":
         path => "$localtree/$name",
         ensure => directory,
-        owner => $owner,
-        group => $group,
+        owner => "$owner",
+        group => "$group",
         mode => $public ? {
             true => $shared ? {
                 true => 2775,
@@ -173,7 +173,7 @@ define git::repository::domain($public = false, $shared = false, $localtree = "/
     git::repository { "$name":
         public => $public,
         shared => $shared,
-        localtree => "$localtree/$domain",
+        localtree => "$localtree/domains",
         owner => "$owner",
         group => "$group",
         init => $init
