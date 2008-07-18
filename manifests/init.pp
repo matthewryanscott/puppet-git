@@ -108,6 +108,14 @@ define git::repository( $public = false, $shared = false, $localtree = "/srv/git
 }
 
 define git::clean($localtree = "/srv/git") {
+
+    #
+    # Resource to clean out a working directory
+    # Useful for directories you want to git::pull from upstream, but might
+    # have added files. This resource is applied for all git::pull resources,
+    # by default.
+    #
+
     exec { "git_clean_exec_$name":
         cwd => "$localtree/$name",
         command => "git clean -d -f"
@@ -115,6 +123,16 @@ define git::clean($localtree = "/srv/git") {
 }
 
 define git::reset($localtree = "/srv/git", $clean = true) {
+
+    #
+    # Resource to reset changes in a working directory
+    # Useful to undo any changes that might have occured in directories
+    # that you want to git::pull for. This resource is automatically called
+    # with every git::pull by default.
+    #
+    # You can set $clean to false to prevent a git::clean (removing untracked files)
+    #
+
     exec { "git_reset_exec_$name":
         cwd => "$localtree/$name",
         command => "git reset --hard HEAD"
@@ -127,9 +145,26 @@ define git::reset($localtree = "/srv/git", $clean = true) {
     }
 }
 
-define git::pull($source = false, $localtree = "/srv/git") {
-    git::reset { "$name":
-        localtree => "$localtree"
+define git::pull($source = false, $localtree = "/srv/git", $reset = true, $clean = true) {
+
+    #
+    # This resource enables one to update a working directory
+    # from an upstream GIT source repository. Note that by default,
+    # the working directory is git::reset (undo any changes to tracked
+    # files), and git::clean (remove untracked files)
+    #
+    # Note that to prevent a git::reset to be executed, you can set $reset to false when
+    # calling this resource.
+    #
+    # Note that to prevent a git::clean to be executed as part of the git::reset, you can
+    # set $clean to false
+    #
+
+    if $reset {
+        git::reset { "$name":
+            localtree => "$localtree",
+            clean => $clean
+        }
     }
 
     case $source {
@@ -175,7 +210,12 @@ define git::repository::domain($public = false, $shared = false, $localtree = "/
         shared => $shared,
         localtree => "$localtree/domains",
         owner => "$owner",
-        group => "$group",
-        init => $init
+        group => "git-$name",
+        init => $init,
+        require => Group["git-$name"]
+    }
+
+    group { "git-$name":
+        ensure => present
     }
 }
