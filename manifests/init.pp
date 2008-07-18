@@ -173,7 +173,7 @@ define git::pull($source = false, $localtree = "/srv/git", $reset = true, $clean
                 cwd => "$localtree/$name",
                 command => "git pull",
                 onlyif => "test -d $localtree/$name/.git",
-                require => Exec["git_reset_exec_$name"]
+                require => Git::Reset["$name"]
             }
         }
         default: {
@@ -181,7 +181,7 @@ define git::pull($source = false, $localtree = "/srv/git", $reset = true, $clean
                 cwd => "$localtree/$name",
                 command => "git pull $source",
                 onlyif => "test -d $localtree/$name/.git",
-                require => Exec["git_reset_exec_$name"]
+                require => Git::Reset["$name"]
             }
         }
     }
