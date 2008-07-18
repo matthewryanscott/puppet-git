@@ -14,6 +14,10 @@ while [ $# -gt 0 ]; do
             SHARED=$2
             shift; shift
         ;;
+        --public)
+            PUBLIC=$2
+            shift; shift
+        ;;
         --owner)
             OWNER=$2
             shift; shift
@@ -47,10 +51,16 @@ done
 if [ -d "$LOCALTREE/$NAME/.git" ]; then
     # Ensure though you change the ownership as specified
     chown -R $OWNER:$GROUP "$LOCALTREE/$NAME"
-    if [ $SHARED -eq 1 ]; then
+    if [ "$SHARED" == "true" ]; then
         find "$LOCALTREE/$NAME" -type d -exec chmod g+ws {} \;
         find "$LOCALTREE/$NAME" -type f -exec chmod g+w {} \;
     fi
+
+    if [ "$PUBLIC" == "true" ]; then
+        find "$LOCALTREE/$NAME" -type d -exec chmod o+rx {} \;
+        find "$LOCALTREE/$NAME" -type f -exec chmod o+r {} \;
+    fi
+
     exit 0
 fi
 
@@ -62,6 +72,11 @@ if [ ! -z "$INIT_COMMIT" ] ; then
     echo This is an initial commit file > README
     git add README
     git commit -a -m "Initial Commit"
+fi
+
+if [ "$PUBLIC" == "true" ]; then
+    find "$LOCALTREE/$NAME" -type d -exec chmod o+rx {} \;
+    find "$LOCALTREE/$NAME" -type f -exec chmod o+r {} \;
 fi
 
 chown -R $OWNER:$GROUP .
