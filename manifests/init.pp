@@ -145,7 +145,7 @@ define git::reset($localtree = "/srv/git", $clean = true) {
     }
 }
 
-define git::pull($source = false, $localtree = "/srv/git", $reset = true, $clean = true) {
+define git::pull($source = false, $localtree = "/srv/git", $reset = true, $clean = true, $branch = false) {
 
     #
     # This resource enables one to update a working directory
@@ -179,7 +179,10 @@ define git::pull($source = false, $localtree = "/srv/git", $reset = true, $clean
         default: {
             exec { "git_pull_exec_$name":
                 cwd => "$localtree/$name",
-                command => "git pull $source",
+                command => $branch ? {
+                    false => "git pull $source",
+                    default => "git pull $source $branch",
+                },
                 onlyif => "test -d $localtree/$name/.git",
                 require => Git::Reset["$name"]
             }
