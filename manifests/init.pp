@@ -100,8 +100,8 @@ define git::repository( $public = false, $shared = false, $localtree = "/srv/git
 
     exec { "git_init_script_$name":
         command => $init ? {
-            true => "git_init_script --localtree $localtree --name $name --shared $shared --owner $owner --group $group --init-commit",
-            default => "git_init_script --localtree $localtree --name $name --shared $shared --owner $owner --group $group"
+            true => "git_init_script --localtree $localtree --name $name --shared $shared --public $public --owner $owner --group $group --init-commit",
+            default => "git_init_script --localtree $localtree --name $name --shared $shared --public $public --owner $owner --group $group"
         },
         require => [ File["git_repository_$name"], File["/usr/local/bin/git_init_script"] ]
     }
