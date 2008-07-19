@@ -179,6 +179,11 @@ class git {
                 }
             }
             default: {
+                clone { "$name":
+                    localtree => "$localtree",
+                    source => "$source"
+                }
+
                 exec { "git_pull_exec_$name":
                     cwd => "$localtree/$name",
                     command => $branch ? {
@@ -186,26 +191,18 @@ class git {
                         default => "git pull $source $branch"
                     },
                     onlyif => "test -d $localtree/$name/.git",
-                    require => Reset["$name"]
+                    require => [ Clone["$name"], Reset["$name"], Clean["$name"] ]
                 }
             }
         }
     }
 
     define clone($source, $localtree = "/srv/git") {
-        file { "git_clone_file_$name":
-            path => "$localtree/$name",
-            ensure => absent,
-            purge => true,
-            recurse => true,
-            force => true
-        }
-
         exec { "git_clone_exec_$name":
             cwd => $localtree,
             command => "git clone $source $name",
             require => File["git_clone_file_$name"],
-            creates => "$localtree/$name/.git/"
+            creates => "$localtree/$name/"
         }
     }
 
