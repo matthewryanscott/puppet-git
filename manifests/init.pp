@@ -201,7 +201,6 @@ class git {
         exec { "git_clone_exec_$name":
             cwd => $localtree,
             command => "git clone $source $name",
-            require => File["git_clone_file_$name"],
             creates => "$localtree/$name/"
         }
     }
