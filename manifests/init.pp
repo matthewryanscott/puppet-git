@@ -11,7 +11,7 @@ class git::client {
     # This class causes the client to gain git capabilities. Boo!
     #
 
-    package { "git-core":
+    package { "git":
         ensure => installed
     }
 }
@@ -181,7 +181,7 @@ define git::pull($source = false, $localtree = "/srv/git", $reset = true, $clean
                 cwd => "$localtree/$name",
                 command => $branch ? {
                     false => "git pull $source",
-                    default => "git pull $source $branch",
+                    default => "git pull $source $branch"
                 },
                 onlyif => "test -d $localtree/$name/.git",
                 require => Git::Reset["$name"]
