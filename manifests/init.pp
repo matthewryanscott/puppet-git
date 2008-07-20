@@ -96,7 +96,7 @@ class git {
         # Set the hook for this repository
         file { "git_repository_hook_$name":
             path => "$localtree/$name/hooks/post-commit",
-            content => template('git/post-commit.erb'),
+            source => "puppet://$server/git/post-commit",
             mode => 755
         }
 
