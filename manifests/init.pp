@@ -116,7 +116,7 @@ class git {
             default: {
                 file { "git_repository_commit_list_$name":
                     path => "$localtree/$name/commit-list",
-                    content => $recipients
+                    content => template('git/commit-list.erb')
                 }
             }
         }
