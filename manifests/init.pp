@@ -123,6 +123,7 @@ class git {
                 true => "git_init_script --localtree $localtree --name $name --shared $shared --public $public --owner $owner --group $group --init-commit",
                 default => "git_init_script --localtree $localtree --name $name --shared $shared --public $public --owner $owner --group $group"
             },
+            creates => "$localtree/$name/.git/",
             require => [ File["git_repository_$name"], File["/usr/local/bin/git_init_script"] ]
         }
     }
