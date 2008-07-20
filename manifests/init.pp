@@ -97,17 +97,20 @@ class git {
         file { "git_repository_hook_post-commit_$name":
             path => "$localtree/$name/.git/hooks/post-commit",
             source => "puppet://$server/git/post-commit",
-            mode => 755
+            mode => 755,
+            requires => [ File["git_repoository_$name"], Exec["git_init_script_$name"] ]
         }
 
         file { "git_repository_hook_update_$name":
             path => "$localtree/$name/.git/hooks/update",
             ensure => "$localtree/$name/.git/hooks/post-commit",
+            requires => [ File["git_repoository_$name"], Exec["git_init_script_$name"] ]
         }
 
         file { "git_repository_hook_post-update_$name":
             path => "$localtree/$name/.git/hooks/post-update",
-            mode => 755
+            mode => 755,
+            requires => [ File["git_repoository_$name"], Exec["git_init_script_$name"] ]
         }
 
         # In case there are recipients defined, get in the commit-list
@@ -116,7 +119,8 @@ class git {
             default: {
                 file { "git_repository_commit_list_$name":
                     path => "$localtree/$name/commit-list",
-                    content => template('git/commit-list.erb')
+                    content => template('git/commit-list.erb'),
+                    requires => [ File["git_repoository_$name"], Exec["git_init_script_$name"] ]
                 }
             }
         }
