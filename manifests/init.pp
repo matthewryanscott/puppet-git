@@ -214,12 +214,10 @@ class git {
                 }
             }
             default: {
-                @clone { "$name":
+                clone { "$name":
                     localtree => "$localtree",
                     source => "$source"
                 }
-
-                Clone <||>
 
                 exec { "git_pull_exec_$name":
                     cwd => "$localtree/$name",
