@@ -105,7 +105,7 @@ class git {
             false: {}
             default: {
                 file { "git_repository_commit_list_$name":
-                    path => "$localtree/$name/commit-list,
+                    path => "$localtree/$name/commit-list",
                     content => $recipients
                 }
 
