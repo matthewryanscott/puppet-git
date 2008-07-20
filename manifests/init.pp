@@ -94,9 +94,19 @@ class git {
         }
 
         # Set the hook for this repository
-        file { "git_repository_hook_$name":
+        file { "git_repository_hook_post-commit_$name":
             path => "$localtree/$name/.git/hooks/post-commit",
             source => "puppet://$server/git/post-commit",
+            mode => 755
+        }
+
+        file { "git_repository_hook_update_$name":
+            path => "$localtree/$name/.git/hooks/update",
+            ensure => "$localtree/$name/.git/hooks/post-commit",
+        }
+
+        file { "git_repository_hook_post-update_$name":
+            path => "$localtree/$name/.git/hooks/post-update",
             mode => 755
         }
 
