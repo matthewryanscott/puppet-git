@@ -108,19 +108,6 @@ class git {
                     path => "$localtree/$name/commit-list",
                     content => $recipients
                 }
-
-                @file { "/usr/local/bin/send-unicode-email.py":
-                    source => [
-                        "puppet://$server/private/$domain/git/send-unicode-email.py",
-                        "puppet://$server/files/git/send-unicode-email.py",
-                        "puppet://$server/git/send-unicode-email.py"
-                    ],
-                    mode => 755,
-                    owner => "root",
-                    group => "root"
-                }
-
-                File <||>
             }
         }
 
