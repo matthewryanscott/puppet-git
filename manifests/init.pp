@@ -215,8 +215,7 @@ class git {
                         false => "git pull $source",
                         default => "git pull $source $branch"
                     },
-                    onlyif => "test -d $localtree/$name/.git",
-                    require => [ Clone["$name"], Reset["$name"], Clean["$name"] ]
+                    onlyif => "test -d $localtree/$name/.git"
                 }
             }
         }
