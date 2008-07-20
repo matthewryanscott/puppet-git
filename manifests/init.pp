@@ -52,7 +52,7 @@ class git {
 
     define repository(  $public = false, $shared = false, $localtree = "/srv/git",
                         $owner = "root", $group = "root", $init = true,
-                        $symlink_prefix = "puppet") {
+                        $symlink_prefix = "puppet", $recipients = false) {
         # FIXME
         # Why does this include server? One can run repositories without a git daemon..!!
         # - The defined File["git_init_script"] resource will need to move to this class
@@ -89,6 +89,35 @@ class git {
                 default => $shared ? {
                     true => 2770,
                     default => 0750
+                }
+            }
+        }
+
+        # Set the hook for this repository
+        file { "git_repository_hook_$name":
+            path => "$localtree/$name/hooks/post-commit",
+            content => template('git/post-commit.erb'),
+            mode => 755
+        }
+
+        # In case there are recipients defined, get in the commit-list
+        case $recipients {
+            false: {}
+            default: {
+                file { "git_repository_commit_list_$name":
+                    path => "$localtree/$name/commit-list,
+                    content => $recipients
+                }
+
+                @file { "/usr/local/bin/send-unicode-email.py":
+                    source => [
+                        "puppet://$server/private/$domain/git/send-unicode-email.py",
+                        "puppet://$server/files/git/send-unicode-email.py",
+                        "puppet://$server/git/send-unicode-email.py"
+                    ],
+                    mode => 755,
+                    owner => "root",
+                    group => "root"
                 }
             }
         }
@@ -205,7 +234,8 @@ class git {
         }
     }
 
-    define repository::domain($public = false, $shared = false, $localtree = "/srv/git", $owner = "root", $group = "root", $init = true) {
+    define repository::domain(  $public = false, $shared = false, $localtree = "/srv/git", $owner = "root",
+                                $group = "root", $init = true, $recipients = false) {
         repository { "$name":
             public => $public,
             shared => $shared,
@@ -213,6 +243,7 @@ class git {
             owner => "$owner",
             group => "git-$name",
             init => $init,
+            recipients => $recipients,
             require => Group["git-$name"]
         }
 
