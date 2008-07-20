@@ -151,11 +151,6 @@ class git {
         # by default.
         #
 
-        @clone { "$name":
-            localtree => "$localtree",
-            source => "$source"
-        }
-
         exec { "git_clean_exec_$name":
             cwd => "$localtree/$name",
             command => "git clean -d -f",
@@ -173,11 +168,6 @@ class git {
         #
         # You can set $clean to false to prevent a clean (removing untracked files)
         #
-
-        @clone { "$name":
-            localtree => "$localtree",
-            source => "$source"
-        }
 
         exec { "git_reset_exec_$name":
             cwd => "$localtree/$name",
