@@ -151,9 +151,15 @@ class git {
         # by default.
         #
 
+        @clone { "$name":
+            localtree => "$localtree",
+            source => "$source"
+        }
+
         exec { "git_clean_exec_$name":
             cwd => "$localtree/$name",
-            command => "git clean -d -f"
+            command => "git clean -d -f",
+            require => Clone["$name"]
         }
     }
 
@@ -168,8 +174,14 @@ class git {
         # You can set $clean to false to prevent a clean (removing untracked files)
         #
 
+        @clone { "$name":
+            localtree => "$localtree",
+            source => "$source"
+        }
+
         exec { "git_reset_exec_$name":
             cwd => "$localtree/$name",
+            require => Clone["$name"],
             command => "git reset --hard HEAD"
         }
 
@@ -212,10 +224,12 @@ class git {
                 }
             }
             default: {
-                clone { "$name":
+                @clone { "$name":
                     localtree => "$localtree",
                     source => "$source"
                 }
+
+                Clone <||>
 
                 exec { "git_pull_exec_$name":
                     cwd => "$localtree/$name",
