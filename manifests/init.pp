@@ -51,8 +51,8 @@ class git {
     }
 
     define repository(  $public = false, $shared = false, $localtree = "/srv/git",
-                        $owner = "root", $group = "root", $init = true,
-                        $symlink_prefix = "puppet", $recipients = false) {
+                        $owner = "root", $group = "root", $init = true, $symlink_prefix = "puppet",
+                        $recipients = false, $description = false) {
         # FIXME
         # Why does this include server? One can run repositories without a git daemon..!!
         # - The defined File["git_init_script"] resource will need to move to this class
