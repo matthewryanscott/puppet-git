@@ -98,7 +98,7 @@ class git {
             path => "$localtree/$name/.git/hooks/post-commit",
             source => "puppet://$server/git/post-commit",
             mode => 755,
-            requires => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
+            require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
         }
 
         file { "git_repository_hook_update_$name":
