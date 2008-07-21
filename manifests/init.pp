@@ -98,17 +98,19 @@ class git {
             path => "$localtree/$name/.git/hooks/post-commit",
             source => "puppet://$server/git/post-commit",
             mode => 755,
-            requires => [ File["git_repoository_$name"], Exec["git_init_script_$name"] ]
+            requires => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
         }
 
         file { "git_repository_hook_update_$name":
             path => "$localtree/$name/.git/hooks/update",
             ensure => "$localtree/$name/.git/hooks/post-commit",
+            require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
         }
 
         file { "git_repository_hook_post-update_$name":
             path => "$localtree/$name/.git/hooks/post-update",
-            mode => 755
+            mode => 755,
+            require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
         }
 
         # In case there are recipients defined, get in the commit-list
@@ -117,11 +119,22 @@ class git {
             default: {
                 file { "git_repository_commit_list_$name":
                     path => "$localtree/$name/commit-list",
-                    content => template('git/commit-list.erb')
+                    content => template('git/commit-list.erb'),
+                    require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
                 }
             }
         }
 
+        case $description {
+            false: {}
+            default: {
+                file { "git_repository_description_$name":
+                    path => "$localtree/$name/.git/description",
+                    content => "$description",
+                    require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
+                }
+            }
+        }
         file { "git_repository_symlink_$name":
             path => "/git/$symlink_prefix-$name",
             links => manage,
@@ -230,7 +243,7 @@ class git {
     }
 
     define repository::domain(  $public = false, $shared = false, $localtree = "/srv/git", $owner = "root",
-                                $group = "root", $init = true, $recipients = false) {
+                                $group = "root", $init = true, $recipients = false, $description = false) {
         repository { "$name":
             public => $public,
             shared => $shared,
@@ -239,6 +252,7 @@ class git {
             group => "git-$name",
             init => $init,
             recipients => $recipients,
+            description => $description,
             require => Group["git-$name"]
         }
 
