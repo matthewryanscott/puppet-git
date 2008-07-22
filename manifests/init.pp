@@ -251,10 +251,10 @@ class git {
             $_name = $name
         }
 
-        exec { "git_clone_exec_$name":
+        exec { "git_clone_exec_$localtree/$_name":
             cwd => $localtree,
             command => "git clone $source $_name",
-            creates => "$localtree/$_name/"
+            creates => "$localtree/$_name/.git"
         }
     }
 
