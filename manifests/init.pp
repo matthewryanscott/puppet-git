@@ -162,12 +162,15 @@ class git {
         #
 
         exec { "git_clean_exec_$name":
-            cwd => "$localtree/$name",
+            cwd => $real_name ? {
+                false => "$localtree/$name",
+                default => "$localtree/$real_name"
+            },
             command => "git clean -d -f"
         }
     }
 
-    define reset($localtree = "/srv/git", $clean = true) {
+    define reset($localtree = "/srv/git", $real_name = false, $clean = true) {
 
         #
         # Resource to reset changes in a working directory
@@ -179,13 +182,17 @@ class git {
         #
 
         exec { "git_reset_exec_$name":
-            cwd => "$localtree/$name",
+            cwd => $real_name ? {
+                false => "$localtree/$name",
+                default => "$localtree/$real_name"
+            },
             command => "git reset --hard HEAD"
         }
 
         if $clean {
             clean { "$name":
-                localtree => "$localtree"
+                localtree => "$localtree",
+                real_name => "$real_name"
             }
         }
     }
@@ -206,19 +213,10 @@ class git {
         # set $clean to false
         #
 
-        if $reset {
-            if $real_name {
-                reset { "$real_name":
-                    localtree => "$localtree",
-                    clean => $clean
-                }
-            }
-            else {
-                reset { "$name":
-                    localtree => "$localtree",
-                    clean => $clean
-                }
-            }
+        reset { "$name":
+            localtree => "$localtree",
+            real_name => "$real_name",
+            clean => $clean
         }
 
         case $source {
