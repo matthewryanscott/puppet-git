@@ -235,16 +235,10 @@ class git {
     }
 
     define clone($source, $localtree = "/srv/git") {
-        file { "git_clone_localtree_$name":
-            path => "$localtree",
-            ensure => directory
-        }
-
         exec { "git_clone_exec_$name":
             cwd => $localtree,
             command => "git clone $source $name",
-            creates => "$localtree/$name/",
-            require => File["git_clone_localtree_$name"]
+            creates => "$localtree/$name/"
         }
     }
 
