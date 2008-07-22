@@ -190,7 +190,8 @@ class git {
         }
     }
 
-    define pull($source = false, $localtree = "/srv/git", $reset = true, $clean = true, $branch = false) {
+    define pull($source = false, $localtree = "/srv/git", $real_name = false
+                $reset = true, $clean = true, $branch = false) {
 
         #
         # This resource enables one to update a working directory
@@ -206,7 +207,7 @@ class git {
         #
 
         if $reset {
-            reset { "$name":
+            reset { "$real_name":
                 localtree => "$localtree",
                 clean => $clean
             }
@@ -215,30 +216,37 @@ class git {
         case $source {
             false: {
                 exec { "git_pull_exec_$name":
-                    cwd => "$localtree/$name",
+                    cwd => "$localtree/$real_name",
                     command => "git pull",
-                    onlyif => "test -d $localtree/$name/.git",
+                    onlyif => "test -d $localtree/$real_name/.git",
                     require => Reset["$name"]
                 }
             }
             default: {
                 exec { "git_pull_exec_$name":
-                    cwd => "$localtree/$name",
+                    cwd => "$localtree/$real_name",
                     command => $branch ? {
                         false => "git pull $source",
                         default => "git pull $source $branch"
                     },
-                    onlyif => "test -d $localtree/$name/.git"
+                    onlyif => "test -d $localtree/$real_name/.git"
                 }
             }
         }
     }
 
-    define clone($source, $localtree = "/srv/git") {
+    define clone($source, $localtree = "/srv/git", $real_name = false) {
+        if $real_name {
+            $real_name = $real_name
+        }
+        else {
+            $real_name = $name
+        }
+
         exec { "git_clone_exec_$name":
             cwd => $localtree,
-            command => "git clone $source $name",
-            creates => "$localtree/$name/"
+            command => "git clone $source $real_name",
+            creates => "$localtree/$real_name/"
         }
     }
 
