@@ -152,7 +152,7 @@ class git {
         }
     }
 
-    define clean($localtree = "/srv/git") {
+    define clean($localtree = "/srv/git", $real_name = false) {
 
         #
         # Resource to clean out a working directory
