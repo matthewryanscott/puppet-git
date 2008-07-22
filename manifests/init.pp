@@ -223,7 +223,7 @@ class git {
 
         @exec { "git_pull_exec_$name":
             cwd => "$localtree/$real_name",
-            command => "git pull $source",
+            command => "git pull",
             onlyif => "test -d $localtree/$real_name/.git"
         }
 
