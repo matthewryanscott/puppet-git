@@ -245,16 +245,16 @@ class git {
 
     define clone($source, $localtree = "/srv/git", $real_name = false) {
         if $real_name {
-            $real_name = $real_name
+            $_name = $real_name
         }
         else {
-            $real_name = $name
+            $_name = $name
         }
 
         exec { "git_clone_exec_$name":
             cwd => $localtree,
-            command => "git clone $source $real_name",
-            creates => "$localtree/$real_name/"
+            command => "git clone $source $_name",
+            creates => "$localtree/$_name/"
         }
     }
 
