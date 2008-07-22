@@ -207,9 +207,17 @@ class git {
         #
 
         if $reset {
-            reset { "$real_name":
-                localtree => "$localtree",
-                clean => $clean
+            if $real_name {
+                reset { "$real_name":
+                    localtree => "$localtree",
+                    clean => $clean
+                }
+            }
+            else {
+                reset { "$name":
+                    localtree => "$localtree",
+                    clean => $clean
+                }
             }
         }
 
