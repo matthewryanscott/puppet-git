@@ -213,30 +213,29 @@ class git {
         # set $clean to false
         #
 
-        reset { "$name":
-            localtree => "$localtree",
-            real_name => "$real_name",
-            clean => $clean
+        if $reset {
+            reset { "$name":
+                localtree => "$localtree",
+                real_name => "$real_name",
+                clean => $clean
+            }
         }
 
-        case $source {
-            false: {
-                exec { "git_pull_exec_$name":
-                    cwd => "$localtree/$real_name",
-                    command => "git pull",
-                    onlyif => "test -d $localtree/$real_name/.git",
-                    require => Reset["$name"]
-                }
+        @exec { "git_pull_exec_$name":
+            cwd => "$localtree/$real_name",
+            command => "git pull $source",
+            onlyif => "test -d $localtree/$real_name/.git"
+        }
+
+        if defined(Git::Reset["$name"]) {
+            Exec["git_pull_exec_$name"] {
+                require +> Git::Reset["$name"]
             }
-            default: {
-                exec { "git_pull_exec_$name":
-                    cwd => "$localtree/$real_name",
-                    command => $branch ? {
-                        false => "git pull $source",
-                        default => "git pull $source $branch"
-                    },
-                    onlyif => "test -d $localtree/$real_name/.git"
-                }
+        }
+
+        if defined(Git::Clean["$name"]) {
+            Exec["git_pull_exec_$name"] {
+                require +> Git::Clean["$name"]
             }
         }
     }
