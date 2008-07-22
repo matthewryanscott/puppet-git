@@ -190,7 +190,7 @@ class git {
         }
     }
 
-    define pull($source = false, $localtree = "/srv/git", $real_name = false
+    define pull($source = false, $localtree = "/srv/git", $real_name = false,
                 $reset = true, $clean = true, $branch = false) {
 
         #
