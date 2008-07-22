@@ -238,6 +238,8 @@ class git {
                 require +> Git::Clean["$name"]
             }
         }
+
+        realize(Exec["git_pull_exec_$name"])
     }
 
     define clone($source, $localtree = "/srv/git", $real_name = false) {
