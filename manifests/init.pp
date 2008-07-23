@@ -118,7 +118,7 @@ class git {
             false: {}
             default: {
                 file { "git_repository_commit_list_$name":
-                    path => "$localtree/$name/commit-list",
+                    path => "$localtree/$name/.git/commit-list",
                     content => template('git/commit-list.erb'),
                     require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
                 }
@@ -197,7 +197,7 @@ class git {
         }
     }
 
-    define pull($source = false, $localtree = "/srv/git", $real_name = false,
+    define pull($localtree = "/srv/git", $real_name = false,
                 $reset = true, $clean = true, $branch = false) {
 
         #
