@@ -152,6 +152,32 @@ class git {
         }
     }
 
+    define repository::domain(  $public = false, $shared = false, $localtree = "/srv/git", $owner = "root",
+                                $group = "root", $init = true, $recipients = false, $description = false) {
+        repository { "$name":
+            public => $public,
+            shared => $shared,
+            localtree => "$localtree/domains",
+            owner => "$owner",
+            group => "git-$name",
+            init => $init,
+            recipients => $recipients,
+            description => $description,
+            require => Group["git-$name"]
+        }
+
+        group { "git-$name":
+            ensure => present
+        }
+
+        user { "satellite-$name":
+            ensure => present,
+            comment => "Satellite user for domain $name",
+            groups => "git-$name",
+            shell => "/usr/bin/git-shell"
+        }
+    }
+
     define clean($localtree = "/srv/git", $real_name = false) {
 
         #
@@ -254,25 +280,6 @@ class git {
             cwd => $localtree,
             command => "git clone $source $_name",
             creates => "$localtree/$_name/.git"
-        }
-    }
-
-    define repository::domain(  $public = false, $shared = false, $localtree = "/srv/git", $owner = "root",
-                                $group = "root", $init = true, $recipients = false, $description = false) {
-        repository { "$name":
-            public => $public,
-            shared => $shared,
-            localtree => "$localtree/domains",
-            owner => "$owner",
-            group => "git-$name",
-            init => $init,
-            recipients => $recipients,
-            description => $description,
-            require => Group["git-$name"]
-        }
-
-        group { "git-$name":
-            ensure => present
         }
     }
 }
