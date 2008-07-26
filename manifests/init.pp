@@ -46,7 +46,11 @@ class git {
             owner => "root",
             group => "root",
             mode => 750,
-            source => "puppet://$server/git/usr/local/bin/git_init_script"
+            source => [
+                "puppet://$server/private/$domain/git/git_init_script",
+                "puppet://$server/files/git/git_init_script",
+                "puppet://$server/git/git_init_script"
+            ]
         }
     }
 
@@ -135,6 +139,7 @@ class git {
                 }
             }
         }
+
         file { "git_repository_symlink_$name":
             path => "/git/$symlink_prefix-$name",
             links => manage,
