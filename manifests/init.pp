@@ -258,6 +258,17 @@ class git {
             onlyif => "test -d $localtree/$real_name/.git"
         }
 
+        case $branch {
+            false: {}
+            default: {
+                exec { "git_pull_checkout_$branch_$localtree/$_name":
+                    cwd => "$localtree/$_name",
+                    command => "git checkout --track -b $branch origin/$branch",
+                    creates => "$localtree/$_name/.git/refs/heads/$branch"
+                }
+            }
+        }
+
         if defined(Git::Reset["$name"]) {
             Exec["git_pull_exec_$name"] {
                 require +> Git::Reset["$name"]
@@ -273,7 +284,7 @@ class git {
         realize(Exec["git_pull_exec_$name"])
     }
 
-    define clone($source, $localtree = "/srv/git", $real_name = false) {
+    define clone($source, $localtree = "/srv/git", $real_name = false, $branch = false) {
         if $real_name {
             $_name = $real_name
         }
@@ -285,6 +296,17 @@ class git {
             cwd => $localtree,
             command => "git clone $source $_name",
             creates => "$localtree/$_name/.git"
+        }
+
+        case $branch {
+            false: {}
+            default: {
+                exec { "git_clone_checkout_$branch_$localtree/$_name":
+                    cwd => "$localtree/$_name",
+                    command => "git checkout --track -b $branch origin/$branch",
+                    creates => "$localtree/$_name/.git/refs/heads/$branch"
+                }
+            }
         }
     }
 }
