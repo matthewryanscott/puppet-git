@@ -1,0 +1,28 @@
+<?xml version='1.0'?>
+<!DOCTYPE articleinfo PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docarticle/xml/4.5/docarticlex.dtd" [
+]>
+
+<articleinfo id="PuppetCommonModules-PuppetModule">
+    <title>Puppet Common Modules</title>
+    <subtitle>The GIT Module</subtitle>
+    <issuenum>0.1</issuenum>
+    <productnumber>0</productnumber>
+    <abstract><para>This article is about configuration management for puppet, using the git module</para></abstract>
+    <corpauthor>
+        <inlinemediaobject>
+            <imageobject>
+                <imagedata format='SVG' fileref="Common_Content/images/title_logo.svg" />
+            </imageobject>
+            <textobject><phrase>Logo</phrase></textobject>
+        </inlinemediaobject>
+    </corpauthor>
+    <copyright>
+        <year>&YEAR;</year>
+        <holder>&HOLDER;</holder>
+    </copyright>
+    <xi:include href="Common_Content/Legal_Notice.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+    <xi:include href="Author_Group.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+</articleinfo>
+
+
+

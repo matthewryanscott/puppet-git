@@ -1,0 +1,12 @@
+<?xml version='1.0'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docarticle/xml/4.5/docarticlex.dtd" [
+]>
+
+<article>
+	<xi:include href="Article_Info.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+	<para>
+		Put some text here!
+	</para>
+	<xi:include href="Appendix.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+</article>
+
