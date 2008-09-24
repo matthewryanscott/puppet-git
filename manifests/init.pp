@@ -191,15 +191,16 @@ class git {
     }
 
     define repository::domain(  $public = false, $shared = false, $localtree = "/srv/git/",
-                                $owner = "root", $group = "root", $init = true, $symlink_prefix = false,
-                                $prefix = "puppet-domain", $recipients = false, $description = false) {
+                                $owner = "root", $group = "root", $symlink_prefix = false,
+                                $recipients = false, $description = false) {
         repository { "$name":
             public => $public,
             shared => $shared,
             localtree => "$localtree/",
             owner => "$owner",
             group => "git-$name",
-            init => $init,
+            prefix => "domain",
+            symlink_prefix => "$symlink_prefix",
             recipients => $recipients,
             description => $description,
             require => Group["git-$name"]
