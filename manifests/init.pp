@@ -202,7 +202,7 @@ class git {
             prefix => "domain",
             symlink_prefix => "$symlink_prefix",
             recipients => $recipients,
-            description => $description,
+            description => "$description",
             require => Group["git-$name"]
         }
 
