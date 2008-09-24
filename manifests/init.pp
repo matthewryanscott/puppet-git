@@ -55,8 +55,8 @@ class git {
     }
 
     define repository(  $public = false, $shared = false, $localtree = "/srv/git/",
-                        $owner = "root", $group = "root", $init = true, $symlink_prefix = "puppet",
-                        $recipients = false, $description = false) {
+                        $owner = "root", $group = "root", $init = true, $symlink_prefix = false,
+                        $prefix = false, $recipients = false, $description = false) {
         # FIXME
         # Why does this include server? One can run repositories without a git daemon..!!
         # - The defined File["git_init_script"] resource will need to move to this class
@@ -68,7 +68,7 @@ class git {
         # Set $shared to true to allow the group owner (set with $group) to write to the repository
         #
         # Set $localtree to the base directory of where you would like to have the git repository located.
-        # The actual git repository would end up in ${localtree}${name}, where $name is the title you gave to
+        # The actual git repository would end up in $localtree/$name, where $name is the title you gave to
         # the resource.
         #
         # Set $owner to the user that is the owner of the entire git repository
@@ -81,7 +81,10 @@ class git {
         include server
 
         file { "git_repository_$name":
-            path => "${localtree}${name}",
+            path => $prefix ? {
+                false => "$localtree/$name",
+                default => "$localtree/$prefix-$name"
+            },
             ensure => directory,
             owner => "$owner",
             group => "$group",
@@ -99,20 +102,29 @@ class git {
 
         # Set the hook for this repository
         file { "git_repository_hook_post-commit_$name":
-            path => "${localtree}${name}/.git/hooks/post-commit",
+            path => $prefix ? {
+                false => "$localtree/$name/hooks/post-commit",
+                default => "$localtree/$prefix-$name/hooks/post-commit"
+            },
             source => "puppet://$server/git/post-commit",
             mode => 755,
             require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
         }
 
         file { "git_repository_hook_update_$name":
-            path => "${localtree}${name}/.git/hooks/update",
-            ensure => "${localtree}${name}/.git/hooks/post-commit",
+            path => $prefix ? {
+                false => "$localtree/$name/hooks/update",
+                default => "$localtree/$prefix-$name/hooks/update"
+            },
+            ensure => "$localtree/$name/hooks/post-commit",
             require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
         }
 
         file { "git_repository_hook_post-update_$name":
-            path => "${localtree}${name}/.git/hooks/post-update",
+            path => $prefix ? {
+                false => "$localtree/$name/hooks/post-update",
+                default => "$localtree/$prefix-$name/hooks/post-update"
+            },
             mode => 755,
             require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
         }
@@ -122,7 +134,10 @@ class git {
             false: {}
             default: {
                 file { "git_repository_commit_list_$name":
-                    path => "${localtree}${name}/.git/commit-list",
+                    path => $prefix ? {
+                        false => "$localtree/$name/commit-list",
+                        default => "$localtree/$prefix-$name/commit-list"
+                    },
                     content => template('git/commit-list.erb'),
                     require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
                 }
@@ -133,7 +148,10 @@ class git {
             false: {}
             default: {
                 file { "git_repository_description_$name":
-                    path => "${localtree}${name}/.git/description",
+                    path => $prefix ? {
+                        false => "$localtree/$name/description",
+                        default => "$localtree/$prefix-$name/description"
+                    },
                     content => "$description",
                     require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
                 }
@@ -141,28 +159,44 @@ class git {
         }
 
         file { "git_repository_symlink_$name":
-            path => "/git/$symlink_prefix-$name",
+            path => $symlink_prefix ? {
+                false => $prefix ? {
+                    false => "/git/$name",
+                    default => "/git/$prefix-$name"
+                },
+                default => $prefix ? {
+                    false => "/git/$symlink_prefix-$name",
+                    default => "/git/$symlink_prefix-$prefix-$name"
+                }
+            },
             links => manage,
             backup => false,
-            ensure => "${localtree}${name}"
+            ensure => $prefix ? {
+                false => "$localtree/$name",
+                default => "$localtree/$prefix-$name"
+            }
         }
 
         exec { "git_init_script_$name":
-            command => $init ? {
-                true => "git_init_script --localtree $localtree --name $name --shared $shared --public $public --owner $owner --group $group --init-commit",
-                default => "git_init_script --localtree $localtree --name $name --shared $shared --public $public --owner $owner --group $group"
+            command => $prefix ? {
+                false => "git_init_script --localtree $localtree --name $name --shared $shared --public $public --owner $owner --group $group",
+                default => "git_init_script --localtree $localtree --name $prefix-$name --shared $shared --public $public --owner $owner --group $group"
             },
-            creates => "${localtree}${name}/.git/",
+            creates => $prefix ? {
+                false => "$localtree/$name/info",
+                default => "$localtree/$prefix-$name"
+            },
             require => [ File["git_repository_$name"], File["/usr/local/bin/git_init_script"] ]
         }
     }
 
-    define repository::domain(  $public = false, $shared = false, $localtree = "/srv/git/", $owner = "root",
-                                $group = "root", $init = true, $recipients = false, $description = false) {
+    define repository::domain(  $public = false, $shared = false, $localtree = "/srv/git/",
+                                $owner = "root", $group = "root", $init = true, $symlink_prefix = false,
+                                $prefix = "puppet-domain", $recipients = false, $description = false) {
         repository { "$name":
             public => $public,
             shared => $shared,
-            localtree => "$localtree/domains",
+            localtree => "$localtree/",
             owner => "$owner",
             group => "git-$name",
             init => $init,
@@ -194,8 +228,8 @@ class git {
 
         exec { "git_clean_exec_$name":
             cwd => $real_name ? {
-                false => "${localtree}${name}",
-                default => "${localtree}${real_name}"
+                false => "$localtree/$name",
+                default => "$localtree/$real_name"
             },
             command => "git clean -d -f"
         }
@@ -214,8 +248,8 @@ class git {
 
         exec { "git_reset_exec_$name":
             cwd => $real_name ? {
-                false => "${localtree}${name}",
-                default => "${localtree}${real_name}"
+                false => "$localtree/$name",
+                default => "$localtree/$real_name"
             },
             command => "git reset --hard HEAD"
         }
@@ -253,9 +287,9 @@ class git {
         }
 
         @exec { "git_pull_exec_$name":
-            cwd => "${localtree}${real_name}",
+            cwd => "$localtree/$real_name",
             command => "git pull",
-            onlyif => "test -d ${localtree}${real_name}/.git"
+            onlyif => "test -d $localtree/$real_name/info"
         }
 
         case $branch {
@@ -264,7 +298,7 @@ class git {
                 exec { "git_pull_checkout_$branch_$localtree/$_name":
                     cwd => "$localtree/$_name",
                     command => "git checkout --track -b $branch origin/$branch",
-                    creates => "$localtree/$_name/.git/refs/heads/$branch"
+                    creates => "$localtree/$_name/refs/heads/$branch"
                 }
             }
         }
@@ -295,7 +329,7 @@ class git {
         exec { "git_clone_exec_$localtree/$_name":
             cwd => $localtree,
             command => "git clone $source $_name",
-            creates => "$localtree/$_name/.git"
+            creates => "$localtree/$_name/.git/"
         }
 
         case $branch {

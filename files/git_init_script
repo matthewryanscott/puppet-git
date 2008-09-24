@@ -1,5 +1,12 @@
 #!/bin/bash
 
+function usage() {
+    echo "Usage: $0 --localtree /path/to/ --owner 'user' --group 'group' --name 'name' [--shared [true|false]] [--public [true|false]]"
+    exit 1
+}
+
+[ $# -eq 0 ] && usage
+
 while [ $# -gt 0 ]; do
     case "$1" in
         --localtree)
@@ -11,12 +18,22 @@ while [ $# -gt 0 ]; do
             shift; shift
         ;;
         --shared)
-            SHARED=$2
-            shift; shift
+            if [ "$2" == "true" -o "$2" == "false" ]; then
+                SHARED=$2
+                shift; shift
+            else
+                SHARED="true"
+                shift
+            fi
         ;;
         --public)
-            PUBLIC=$2
-            shift; shift
+            if [ "$2" == "true" -o "$2" == "false" ]; then
+                PUBLIC=$2
+                shift; shift
+            else
+                PUBLIC="true"
+                shift
+            fi
         ;;
         --owner)
             OWNER=$2
@@ -26,9 +43,8 @@ while [ $# -gt 0 ]; do
             GROUP=$2
             shift; shift
         ;;
-        --init-commit)
-            INIT_COMMIT=1
-            shift
+        *)
+            usage
         ;;
     esac
 done
@@ -41,14 +57,20 @@ done
 
 # if owner doesn't exit
 [ -z "$OWNER" ] && exit 1
-[ -z "`getent passwd | grep $OWNER`" ] && exit 1
+
+OWNER_EXISTS=`getent passwd $OWNER > /dev/null 2>&1; echo $?`
+
+[ $OWNER_EXISTS -eq 0 ] || exit 1
 
 # same if group doesn't exist
 [ -z "$GROUP" ] && exit 1
-[ -z "`getent group | grep $GROUP`" ] && exit 1
 
-# if .git directory is there, we're already done
-if [ -d "$LOCALTREE/$NAME/.git" ]; then
+GROUP_EXISTS=`getent group $GROUP > /dev/null 2>&1; echo $?`
+
+[ $GROUP_EXISTS -eq 0 ] || exit 1
+
+# if info file is there, we're already done
+if [ -d "$LOCALTREE/$NAME/info" ]; then
     # Ensure though you change the ownership as specified
     chown -R $OWNER:$GROUP "$LOCALTREE/$NAME"
     if [ "$SHARED" == "true" ]; then
@@ -66,13 +88,9 @@ fi
 
 cd "$LOCALTREE/$NAME"
 
-[ "$SHARED" == "true" ] && git init --shared || git init
-
-if [ ! -z "$INIT_COMMIT" ] ; then
-    echo This is an initial commit file > README
-    git add README
-    git commit -a -m "Initial Commit"
-fi
+# We cannot --bare init as long as the manifest depends on
+# .git/ being present.
+[ "$SHARED" == "true" ] && git --bare init --shared || git --bare init
 
 if [ "$PUBLIC" == "true" ]; then
     find "$LOCALTREE/$NAME" -type d -exec chmod o+rx {} \;
