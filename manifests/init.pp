@@ -23,7 +23,8 @@ class git {
         #
         # Documentation on this class
         #
-        # Including this class will install git, the git-daemon, ensure the service is running
+        # Including this class will install git, the git-daemon, ensure the
+        # service is running
         #
 
         package { "git-daemon":
@@ -42,6 +43,11 @@ class git {
             ensure => running
         }
 
+        file { "/git/":
+            ensure => directory,
+            mode => 755
+        }
+
         file { "/usr/local/bin/git_init_script":
             owner => "root",
             group => "root",
@@ -54,22 +60,31 @@ class git {
         }
     }
 
-    define repository(  $public = false, $shared = false, $localtree = "/srv/git/",
-                        $owner = "root", $group = "root", $init = true, $symlink_prefix = false,
-                        $prefix = false, $recipients = false, $description = false) {
+    define repository(  $public = false, $shared = false,
+                        $localtree = "/srv/git/", $owner = "root",
+                        $group = "root", $symlink_prefix = false,
+                        $prefix = false, $recipients = false,
+                        $description = false) {
         # FIXME
-        # Why does this include server? One can run repositories without a git daemon..!!
-        # - The defined File["git_init_script"] resource will need to move to this class
+        # Why does this include server? One can run repositories without a
+        # git daemon..!!
+        #
+        # - The defined File["git_init_script"] resource will need to move to
+        # this class
         #
         # Documentation on this resource
         #
-        # Set $public to true when calling this resource to make the repository readable to others
+        # Set $public to true when calling this resource to make the repository
+        # readable to others
         #
-        # Set $shared to true to allow the group owner (set with $group) to write to the repository
+        # Set $shared to true to allow the group owner (set with $group) to
+        # write to the repository
         #
-        # Set $localtree to the base directory of where you would like to have the git repository located.
-        # The actual git repository would end up in $localtree/$name, where $name is the title you gave to
-        # the resource.
+        # Set $localtree to the base directory of where you would like to have
+        # the git repository located.
+        #
+        # The actual git repository would end up in $localtree/$name, where
+        # $name is the title you gave to the resource.
         #
         # Set $owner to the user that is the owner of the entire git repository
         #
@@ -108,7 +123,10 @@ class git {
             },
             source => "puppet://$server/git/post-commit",
             mode => 755,
-            require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
+            require => [
+                File["git_repository_$name"],
+                Exec["git_init_script_$name"]
+            ]
         }
 
         file { "git_repository_hook_update_$name":
@@ -117,7 +135,10 @@ class git {
                 default => "$localtree/$prefix-$name/hooks/update"
             },
             ensure => "$localtree/$name/hooks/post-commit",
-            require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
+            require => [
+                File["git_repository_$name"],
+                Exec["git_init_script_$name"]
+            ]
         }
 
         file { "git_repository_hook_post-update_$name":
@@ -126,7 +147,12 @@ class git {
                 default => "$localtree/$prefix-$name/hooks/post-update"
             },
             mode => 755,
-            require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
+            owner => "$owner",
+            group => "$group",
+            require => [
+                File["git_repository_$name"],
+                Exec["git_init_script_$name"]
+            ]
         }
 
         # In case there are recipients defined, get in the commit-list
@@ -139,7 +165,10 @@ class git {
                         default => "$localtree/$prefix-$name/commit-list"
                     },
                     content => template('git/commit-list.erb'),
-                    require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
+                    require => [
+                        File["git_repository_$name"],
+                        Exec["git_init_script_$name"]
+                    ]
                 }
             }
         }
@@ -153,7 +182,10 @@ class git {
                         default => "$localtree/$prefix-$name/description"
                     },
                     content => "$description",
-                    require => [ File["git_repository_$name"], Exec["git_init_script_$name"] ]
+                    require => [
+                        File["git_repository_$name"],
+                        Exec["git_init_script_$name"]
+                    ]
                 }
             }
         }
@@ -186,13 +218,21 @@ class git {
                 false => "$localtree/$name/info",
                 default => "$localtree/$prefix-$name"
             },
-            require => [ File["git_repository_$name"], File["/usr/local/bin/git_init_script"] ]
+            require => [
+                File["git_repository_$name"],
+                File["/usr/local/bin/git_init_script"]
+            ]
         }
     }
 
-    define repository::domain(  $public = false, $shared = false, $localtree = "/srv/git/",
-                                $owner = "root", $group = "root", $symlink_prefix = false,
-                                $recipients = false, $description = false) {
+    define repository::domain(  $public = false,
+                                $shared = false,
+                                $localtree = "/srv/git/",
+                                $owner = "root",
+                                $group = "root",
+                                $symlink_prefix = false,
+                                $recipients = false,
+                                $description = false) {
         repository { "$name":
             public => $public,
             shared => $shared,
@@ -244,7 +284,8 @@ class git {
         # that you want to pull for. This resource is automatically called
         # with every pull by default.
         #
-        # You can set $clean to false to prevent a clean (removing untracked files)
+        # You can set $clean to false to prevent a clean (removing untracked
+        # files)
         #
 
         exec { "git_reset_exec_$name":
@@ -272,11 +313,11 @@ class git {
         # the working directory is reset (undo any changes to tracked
         # files), and clean (remove untracked files)
         #
-        # Note that to prevent a reset to be executed, you can set $reset to false when
-        # calling this resource.
+        # Note that to prevent a reset to be executed, you can set $reset to
+        # false when calling this resource.
         #
-        # Note that to prevent a clean to be executed as part of the reset, you can
-        # set $clean to false
+        # Note that to prevent a clean to be executed as part of the reset, you
+        # can set $clean to false
         #
 
         if $reset {
@@ -290,7 +331,7 @@ class git {
         @exec { "git_pull_exec_$name":
             cwd => "$localtree/$real_name",
             command => "git pull",
-            onlyif => "test -d $localtree/$real_name/info"
+            onlyif => "test -d $localtree/$real_name/.git/info"
         }
 
         case $branch {
@@ -319,7 +360,10 @@ class git {
         realize(Exec["git_pull_exec_$name"])
     }
 
-    define clone($source, $localtree = "/srv/git/", $real_name = false, $branch = false) {
+    define clone(   $source,
+                    $localtree = "/srv/git/",
+                    $real_name = false,
+                    $branch = false) {
         if $real_name {
             $_name = $real_name
         }
