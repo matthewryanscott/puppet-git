@@ -13,8 +13,18 @@ class git {
         # This class causes the client to gain git capabilities. Boo!
         #
 
-        package { "git":
-            ensure => installed
+        case $lsbdistcodename {
+          etch: {
+            os::backported_package{"git-core":
+              ensure => installed
+            }
+          }
+
+          default: {
+            package { "git-core":
+              ensure => installed
+            }
+          }
         }
     }
 
