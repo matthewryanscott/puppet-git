@@ -200,25 +200,6 @@ class git {
             }
         }
 
-        file { "git_repository_symlink_$name":
-            path => $symlink_prefix ? {
-                false => $prefix ? {
-                    false => "/git/$name",
-                    default => "/git/$prefix-$name"
-                },
-                default => $prefix ? {
-                    false => "/git/$symlink_prefix-$name",
-                    default => "/git/$symlink_prefix-$prefix-$name"
-                }
-            },
-            links => manage,
-            backup => false,
-            ensure => $prefix ? {
-                false => "$localtree/$name",
-                default => "$localtree/$prefix-$name"
-            }
-        }
-
         exec { "git_init_script_$name":
             command => $prefix ? {
                 false => "git_init_script --localtree $localtree --name $name --shared $shared --public $public --owner $owner --group $group",
